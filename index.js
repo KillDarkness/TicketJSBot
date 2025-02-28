@@ -35,7 +35,7 @@ loadEvents(client);
 loadCommands(client);
 
 // Carregar o handler de tickets
-require('./handler/ticketHandler')(client);
+require('./handlers/ticketHandler')(client);
 
 client.login(process.env.BOT_TOKEN);
 
@@ -57,11 +57,42 @@ client.on('interactionCreate', async interaction => {
             if (handler) await handler.execute(interaction, client);
         } else if (interaction.customId === 'deleteTicket') {
             const embed = new EmbedBuilder()
-                .setDescription('⛔ Este ticket será deletado em 5 segundos...')
+                .setTitle('⛔ Deletando Ticket')
+                .setDescription('Este ticket será deletado em 5 segundos...')
                 .setColor('Red');
             
             await interaction.reply({ embeds: [embed] });
             setTimeout(() => interaction.channel.delete(), 5000);
+        } else if (interaction.customId === 'attendTicket') {
+            const handler = client.ticketHandlers.get('attendTicket');
+            if (handler) await handler.execute(interaction, client);
+        } else if (interaction.customId.startsWith('stopAttending_')) {
+            const channelId = interaction.customId.split('_')[1];
+            const channel = interaction.guild.channels.cache.get(channelId);
+            
+            if (channel) {
+                const messages = await channel.messages.fetch();
+                const firstMessage = messages.last();
+                
+                if (firstMessage && firstMessage.embeds.length > 0) {
+                    const updatedEmbed = EmbedBuilder.from(firstMessage.embeds[0])
+                        .setFields(
+                            ...firstMessage.embeds[0].fields.map(field => {
+                                if (field.name === '👨‍💼 Atendente') {
+                                    return { name: field.name, value: '`Não assumido`', inline: field.inline };
+                                }
+                                return field;
+                            })
+                        );
+                    
+                    await firstMessage.edit({ embeds: [updatedEmbed] });
+                    await interaction.update({
+                        content: '✅ Você parou de atender este ticket!',
+                        components: [],
+                        ephemeral: true
+                    });
+                }
+            }
         } else if (interaction.customId.startsWith('confirmTicket_')) {
             const ticketType = interaction.customId.split('_')[1];
             const category = await interaction.guild.channels.cache.find(c => c.name === "tickets" && c.type === 4);

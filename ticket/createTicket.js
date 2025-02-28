@@ -13,7 +13,7 @@ module.exports = {
             });
         }
 
-        // Enviar uma resposta inicial
+        // Adicionar o deferReply aqui
         await interaction.deferReply({ ephemeral: true });
 
         const capitalizedType = ticketType.charAt(0).toUpperCase() + ticketType.slice(1).toLowerCase();
@@ -58,7 +58,8 @@ module.exports = {
                 { name: '📅 Duração do ticket', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
                 { name: '📝 Tipo do ticket', value: capitalizedType, inline: true },
                 { name: '📌 Status', value: '`🟢 Aberto`', inline: true },
-                { name: '🔖 Código', value: `\`${ticketCode}\``, inline: true }
+                { name: '🔖 Código', value: `\`${ticketCode}\``, inline: true },
+                { name: '👨‍💼 Atendente', value: '`Não assumido`', inline: true }
             )
             .setColor('#2f3136')
             .setTimestamp()
@@ -70,7 +71,12 @@ module.exports = {
                     .setCustomId('closeTicket')
                     .setLabel('Fechar Ticket')
                     .setStyle(ButtonStyle.Danger)
-                    .setEmoji('🔒')
+                    .setEmoji('🔒'),
+                new ButtonBuilder()
+                    .setCustomId('attendTicket')
+                    .setLabel('Atender')
+                    .setStyle(ButtonStyle.Success)
+                    .setEmoji('👨‍💼')
             );
 
         const mainMessage = await channel.send({ 
