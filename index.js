@@ -35,7 +35,7 @@ loadEvents(client);
 loadCommands(client);
 
 // Carregar o handler de tickets
-require('./handlers/ticketHandler')(client);
+require('./handler/ticketHandler')(client);
 
 client.login(process.env.BOT_TOKEN);
 
